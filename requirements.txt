@@ -1,0 +1,11 @@
+Flask
+Flask-SQLAlchemy
+Flask-CORS
+numpy
+pandas
+paho-mqtt
+joblib
+scikit-learn
+xgboost
+python-dotenv
+imbalanced-learn
