@@ -3,6 +3,7 @@ from flask import Flask, request, jsonify, render_template, redirect, url_for
 from flask_sqlalchemy import SQLAlchemy
 from flask_cors import CORS
 from werkzeug.security import generate_password_hash, check_password_hash
+from types import SimpleNamespace
 
 import pandas as pd
 import warnings
@@ -86,15 +87,16 @@ def perform_prediction_and_alert(user_profile, heart_rate, spo2):
             'avg_glucose_level': float(input_data['avg_glucose_level']),
             'bmi': float(input_data['bmi']),
             'smoking_status': input_data['smoking_status'],
-            'Heart Rate': input_data['Heart Rate'],
-            'SpO2': input_data['SpO2']
+            'Heart Rate': heart_rate,
+            'SpO2': spo2
         }])
         
-        features_preprocessed = preprocessor.transform(input_df)
-        prediction = model.predict(features_preprocessed)[0]
+        # 3. Preprocess
+        input_encoded = preprocessor.transform(input_df)
+        prediction = model.predict(input_encoded)[0]
         probability = 0
         if hasattr(model, "predict_proba"):
-             probability = model.predict_proba(features_preprocessed)[0][1]
+             probability = model.predict_proba(input_encoded)[0][1]
         
         # --- Notifications ---
         # 1. MQTT Feedback
@@ -286,11 +288,30 @@ def predict():
     if model is None or preprocessor is None:
         return jsonify({'message': 'AI model not ready. Please run train_model.py first.'}), 503
 
-    # Prepare input data for prediction
-    heart_rate = float(data.get('heart_rate', latest_data_from_mqtt['heart_rate']))
-    spo2 = float(data.get('spo2', latest_data_from_mqtt['spo2']))
+    # --- PRIORITY: Use Manual Input Data if available, fallback to DB ---
+    # We create a placeholder object that mimics the User model
+    manual_profile = SimpleNamespace()
+    manual_profile.username = user_profile.username
+    manual_profile.fullname = user_profile.fullname
+    manual_profile.zalo_id = user_profile.zalo_id # Keep sending alerts if configured
+    
+    # Map fields (Input from Request > DB Value)
+    manual_profile.age = int(data.get('age', user_profile.age))
+    manual_profile.gender = data.get('gender', user_profile.gender)
+    manual_profile.hypertension = int(data.get('hypertension', user_profile.hypertension))
+    manual_profile.heart_disease = int(data.get('heart_disease', user_profile.heart_disease))
+    manual_profile.ever_married = data.get('ever_married', user_profile.ever_married)
+    manual_profile.work_type = data.get('work_type', user_profile.work_type)
+    manual_profile.residence_type = data.get('residence_type', user_profile.residence_type)
+    manual_profile.avg_glucose_level = float(data.get('avg_glucose_level', user_profile.avg_glucose_level))
+    manual_profile.bmi = float(data.get('bmi', user_profile.bmi))
+    manual_profile.smoking_status = data.get('smoking_status', user_profile.smoking_status)
 
-    prediction, probability = perform_prediction_and_alert(user_profile, heart_rate, spo2)
+    # Prepare input data for prediction
+    heart_rate = float(data.get('heart_rate', latest_data_from_mqtt['heart_rate'] or 0))
+    spo2 = float(data.get('spo2', latest_data_from_mqtt['spo2'] or 0))
+
+    prediction, probability = perform_prediction_and_alert(manual_profile, heart_rate, spo2)
     
     if prediction is None:
          return jsonify({'message': 'Prediction failed internally'}), 500
