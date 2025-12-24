@@ -5,14 +5,14 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login - Stroke Prediction</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}?v=5">
     <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
 </head>
 
 <body class="auth-page">
     <div class="login-main">
         <div class="auth-panel-left elevated-card">
-            <img src="https://i.imgur.com/k2a6g4v.jpeg" alt="Health Monitoring">
+            <img src="{{ url_for('static', filename='images/medical_bg.jpg') }}" alt="Health Monitoring">
             <h2>AI-Powered Health Monitoring</h2>
             <p>Real-time stroke risk prediction using advanced machine learning and IoT sensors.</p>
         </div>

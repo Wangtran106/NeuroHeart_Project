@@ -9,3 +9,4 @@ scikit-learn
 xgboost
 python-dotenv
 imbalanced-learn
+requests

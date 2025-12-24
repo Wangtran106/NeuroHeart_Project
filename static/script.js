@@ -363,25 +363,28 @@ document.addEventListener('DOMContentLoaded', async () => {
         const updateOverallStatus = (status, resultText = '') => {
             const overallStatusEl = document.getElementById('overall-status');
             const overallStatusCard = document.getElementById('overall-status-card');
-            overallStatusCard.classList.remove('danger', 'normal', 'warning');
 
-            switch (status) {
-                case 'danger':
-                    overallStatusEl.innerText = 'Dangerous';
-                    overallStatusCard.classList.add('danger');
-                    break;
-                case 'normal':
-                    overallStatusEl.innerText = 'Normal';
-                    overallStatusCard.classList.add('normal');
-                    break;
-                case 'warning':
-                    overallStatusEl.innerText = resultText || 'No Prediction';
-                    overallStatusCard.classList.add('warning');
-                    break;
-                case 'error':
-                    overallStatusEl.innerText = resultText || 'Error';
-                    overallStatusCard.classList.add('danger');
-                    break;
+            if (overallStatusCard && overallStatusEl) {
+                overallStatusCard.classList.remove('danger', 'normal', 'warning');
+
+                switch (status) {
+                    case 'danger':
+                        overallStatusEl.innerText = 'Dangerous';
+                        overallStatusCard.classList.add('danger');
+                        break;
+                    case 'normal':
+                        overallStatusEl.innerText = 'Normal';
+                        overallStatusCard.classList.add('normal');
+                        break;
+                    case 'warning':
+                        overallStatusEl.innerText = resultText || 'No Prediction';
+                        overallStatusCard.classList.add('warning');
+                        break;
+                    case 'error':
+                        overallStatusEl.innerText = resultText || 'Error';
+                        overallStatusCard.classList.add('danger');
+                        break;
+                }
             }
         };
 
@@ -402,8 +405,13 @@ document.addEventListener('DOMContentLoaded', async () => {
             if (sensorDisconnected) return;
 
             try {
-                const heart_rate = document.getElementById('hr-value').innerText;
-                const spo2 = document.getElementById('spo2-value').innerText;
+                const heart_rate_el = document.getElementById('hr-value');
+                const spo2_el = document.getElementById('spo2-value');
+
+                if (!heart_rate_el || !spo2_el) return;
+
+                const heart_rate = heart_rate_el.innerText;
+                const spo2 = spo2_el.innerText;
 
                 const response = await fetch('/predict', {
                     method: 'POST',
@@ -413,9 +421,14 @@ document.addEventListener('DOMContentLoaded', async () => {
 
                 const result = await response.json();
                 const aiResultDiv = document.getElementById('ai_result');
+                const resultTextEl = document.getElementById('auto-ai-result-text');
+                const confidenceEl = document.getElementById('auto-ai-confidence');
+                const hrUsedEl = document.getElementById('auto-hr-used');
+                const spo2UsedEl = document.getElementById('auto-spo2-used');
+                const timestampEl = document.getElementById('auto-ai-timestamp');
 
                 if (response.ok) {
-                    document.getElementById('auto-ai-result-text').innerText = result.result;
+                    if (resultTextEl) resultTextEl.innerText = result.result;
 
                     // Calculate confidence: if Normal, it's (1 - stroke_prob)
                     let strokeProb = parseFloat(result.probability);
@@ -423,23 +436,27 @@ document.addEventListener('DOMContentLoaded', async () => {
                     if (result.result === 'Bình thường') {
                         confidence = 1 - strokeProb;
                     }
-                    document.getElementById('auto-ai-confidence').innerText = `${(confidence * 100).toFixed(0)}%`;
-                    document.getElementById('auto-hr-used').innerText = result.heart_rate;
-                    document.getElementById('auto-spo2-used').innerText = result.spo2;
-                    document.getElementById('auto-ai-timestamp').innerText = new Date().toLocaleTimeString();
-                    aiResultDiv.style.color = result.result === 'Nguy cơ đột quỵ' ? 'var(--danger-color)' : 'var(--success-color)';
+                    if (confidenceEl) confidenceEl.innerText = `${(confidence * 100).toFixed(0)}%`;
+                    if (hrUsedEl) hrUsedEl.innerText = result.heart_rate;
+                    if (spo2UsedEl) spo2UsedEl.innerText = result.spo2;
+                    if (timestampEl) timestampEl.innerText = new Date().toLocaleTimeString();
+
+                    if (aiResultDiv) {
+                        aiResultDiv.style.color = result.result === 'Nguy cơ đột quỵ' ? 'var(--danger-color)' : 'var(--success-color)';
+                    }
 
                     updateOverallStatus(result.result === 'Nguy cơ đột quỵ' ? 'danger' : 'normal');
                     addToHistory(result.result, result.probability, result.heart_rate, result.spo2);
                 } else {
                     const errorData = await response.json();
                     console.error('Prediction failed:', errorData);
-                    document.getElementById('auto-ai-result-text').innerText = 'Error';
+                    if (resultTextEl) resultTextEl.innerText = 'Error';
                     updateOverallStatus('error', errorData.message);
                 }
             } catch (error) {
                 console.error('Auto-prediction error:', error);
-                document.getElementById('auto-ai-result-text').innerText = 'Error';
+                const resultTextEl = document.getElementById('auto-ai-result-text');
+                if (resultTextEl) resultTextEl.innerText = 'Error';
                 updateOverallStatus('error', error.message);
             }
         };
@@ -447,6 +464,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         const fetchSensorData = async () => {
             const sensorStatusEl = document.getElementById('sensor-connection-status');
             const aiResultDiv = document.getElementById('ai_result');
+            const resultTextEl = document.getElementById('auto-ai-result-text');
 
             try {
                 const response = await fetch('/sensor-data');
@@ -464,10 +482,13 @@ document.addEventListener('DOMContentLoaded', async () => {
                 if (secondsAgo === null || secondsAgo > 5) {
                     if (!sensorDisconnected) {
                         sensorDisconnected = true;
-                        sensorStatusEl.innerText = 'Disconnected ●';
-                        sensorStatusEl.style.color = 'var(--danger-color)';
-                        aiResultDiv.style.color = 'var(--warning-color)';
-                        document.getElementById('auto-ai-result-text').innerText = '⚠️ Sensor Disconnected';
+                        if (sensorStatusEl) {
+                            sensorStatusEl.innerText = 'Disconnected ●';
+                            sensorStatusEl.style.color = 'var(--danger-color)';
+                        }
+                        if (aiResultDiv) aiResultDiv.style.color = 'var(--warning-color)';
+                        if (resultTextEl) resultTextEl.innerText = '⚠️ Sensor Disconnected';
+
                         updateOverallStatus('warning', 'No Prediction');
                         showToast('Sensor Disconnected.', false);
                         clearInterval(autoPredictIntervalId);
@@ -475,8 +496,10 @@ document.addEventListener('DOMContentLoaded', async () => {
                 } else {
                     if (sensorDisconnected) {
                         sensorDisconnected = false;
-                        sensorStatusEl.innerText = 'Connected ●';
-                        sensorStatusEl.style.color = 'var(--success-color)';
+                        if (sensorStatusEl) {
+                            sensorStatusEl.innerText = 'Connected ●';
+                            sensorStatusEl.style.color = 'var(--success-color)';
+                        }
                         autoPredictIntervalId = setInterval(autoPredict, 2000);
                         showToast('Sensor Reconnected.', true);
                     }
@@ -486,10 +509,14 @@ document.addEventListener('DOMContentLoaded', async () => {
                 if (!sensorDisconnected) {
                     sensorDisconnected = true;
                     clearInterval(autoPredictIntervalId);
-                    sensorStatusEl.innerText = 'Disconnected ●';
-                    sensorStatusEl.style.color = 'var(--danger-color)';
-                    aiResultDiv.style.color = 'var(--warning-color)';
-                    document.getElementById('auto-ai-result-text').innerText = '⚠️ Sensor Disconnected';
+
+                    if (sensorStatusEl) {
+                        sensorStatusEl.innerText = 'Disconnected ●';
+                        sensorStatusEl.style.color = 'var(--danger-color)';
+                    }
+                    if (aiResultDiv) aiResultDiv.style.color = 'var(--warning-color)';
+                    if (resultTextEl) resultTextEl.innerText = '⚠️ Sensor Disconnected';
+
                     updateOverallStatus('warning', 'No Prediction');
                     showToast('Sensor Disconnected.', false);
                 }

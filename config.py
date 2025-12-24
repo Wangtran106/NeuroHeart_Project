@@ -11,4 +11,4 @@ class Config:
     MQTT_PASSWORD = os.environ.get('MQTT_PASSWORD') or "1006"
     MQTT_TOPIC_RESULT = "stroke/result"
     MQTT_TOPIC_SENSOR = "sensor/data"
-    FRONTEND_API_URL = os.environ.get('FRONTEND_API_URL') or 'http://127.0.0.1:5000'
+    FRONTEND_API_URL = os.environ.get('FRONTEND_API_URL') or 'http://16.176.144.164:5000'

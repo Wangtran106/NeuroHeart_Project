@@ -19,6 +19,7 @@
     --spacing-unit: 24px;
     --sidebar-width-collapsed: 72px;
     --sidebar-width-expanded: 220px;
+    --text-light: #FFFFFF;
 }
 
 /* General Body and Container Styles */
@@ -37,6 +38,22 @@ body {
     align-items: center;
     justify-content: center;
     min-height: 100vh;
+    position: relative;
+    overflow: hidden;
+}
+
+.auth-page::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-image: url('images/login_bg.jpg');
+    background-size: cover;
+    background-position: center;
+    z-index: -1;
+    transform: scale(1.1);
 }
 
 /* Login Page Specific Layout */
@@ -129,10 +146,25 @@ body {
     min-height: 100vh;
     justify-content: center;
     align-items: center;
-    background: radial-gradient(circle at top left, rgba(37, 99, 235, 0.05) 0%, transparent 30%),
-        radial-gradient(circle at bottom right, rgba(29, 78, 216, 0.05) 0%, transparent 30%),
-        var(--bg-light);
+    position: relative;
+    overflow: hidden;
     padding: var(--spacing-unit);
+}
+
+.auth-container::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-image: url('images/login_bg.jpg');
+    background-size: cover;
+    background-position: center;
+    filter: blur(8px);
+    z-index: -1;
+    transform: scale(1.1);
+    /* Prevents blur edges from showing */
 }
 
 .auth-grid {
