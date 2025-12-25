@@ -474,12 +474,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 const newHr = data.heart_rate || 0;
                 const newSpo2 = data.spo2 || 0;
 
-                updateChart(hrChart, newHr);
-                updateChart(spo2Chart, newSpo2);
-                updateVitals('hr', newHr);
-                updateVitals('spo2', newSpo2);
-
-                if (secondsAgo === null || secondsAgo > 5) {
+                if (secondsAgo === null || secondsAgo > 10) {
                     if (!sensorDisconnected) {
                         sensorDisconnected = true;
                         if (sensorStatusEl) {
@@ -494,14 +489,21 @@ document.addEventListener('DOMContentLoaded', async () => {
                         clearInterval(autoPredictIntervalId);
                     }
                 } else {
+                    // Only update charts if data is fresh
+                    updateChart(hrChart, newHr);
+                    updateChart(spo2Chart, newSpo2);
+                    updateVitals('hr', newHr);
+                    updateVitals('spo2', newSpo2);
+
                     if (sensorDisconnected) {
                         sensorDisconnected = false;
                         if (sensorStatusEl) {
                             sensorStatusEl.innerText = 'Connected ●';
                             sensorStatusEl.style.color = 'var(--success-color)';
                         }
+                        showToast('Sensor Reconnected!', true);
+                        // Restart auto-predict
                         autoPredictIntervalId = setInterval(autoPredict, 2000);
-                        showToast('Sensor Reconnected.', true);
                     }
                 }
             } catch (error) {
