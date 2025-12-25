@@ -156,16 +156,9 @@ body {
     align-items: center;
     position: relative;
     position: relative;
-    overflow-x: hidden;
-    /* Clip horizontal overflow from scaled background */
-    padding: var(--spacing-unit);
-}
-
-/* New Wrapper to Clip Background */
-.auth-page {
     overflow-x: clip;
-    /* Modern CSS to clip overflow without scrollbars */
-    overflow-y: visible;
+    /* clip prevents creating a new scroll context unlike hidden */
+    padding: var(--spacing-unit);
 }
 
 .auth-container::before {
