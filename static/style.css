@@ -147,8 +147,10 @@ body {
     justify-content: center;
     align-items: center;
     position: relative;
-    overflow: hidden;
+    /* overflow: hidden;  <-- REMOVED to allow scrolling */
     padding: var(--spacing-unit);
+    overflow-y: auto;
+    /* Allow vertical scroll */
 }
 
 .auth-container::before {
