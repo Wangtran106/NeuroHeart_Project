@@ -31,22 +31,23 @@ body {
     color: var(--text-main);
     line-height: 1.6;
     font-size: 15px;
-    overflow-x: hidden;
-    /* Prevent horizontal scroll globally */
+    font-size: 15px;
+    /* overflow-x: hidden; REMOVED - Let natural flow handle it, body shouldn't restrict */
 }
 
-html {
-    overflow-x: hidden;
-}
+/* html { overflow-x: hidden; } REMOVED - not needed if we clip properly */
 
 .auth-page {
     display: flex;
     align-items: center;
     justify-content: center;
     min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
     position: relative;
-    overflow-x: hidden;
-    /* Prevent horizontal scroll from scaled background */
+    /* overflow-x: hidden; REMOVED - This was creating a new conflicting scroll context */
 }
 
 .auth-page::before {
@@ -158,6 +159,13 @@ html {
     overflow-x: hidden;
     /* Clip horizontal overflow from scaled background */
     padding: var(--spacing-unit);
+}
+
+/* New Wrapper to Clip Background */
+.auth-page {
+    overflow-x: clip;
+    /* Modern CSS to clip overflow without scrollbars */
+    overflow-y: visible;
 }
 
 .auth-container::before {
