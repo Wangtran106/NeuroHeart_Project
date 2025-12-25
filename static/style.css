@@ -39,7 +39,7 @@ body {
     justify-content: center;
     min-height: 100vh;
     position: relative;
-    overflow: hidden;
+    /* overflow: hidden;  <-- REMOVED to allow scrolling on mobile/small screens */
 }
 
 .auth-page::before {
