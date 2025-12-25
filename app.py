@@ -382,21 +382,23 @@ def update_profile():
         print(f"Error updating profile: {e}")
         return jsonify({'message': 'Failed to update profile'}), 500
 
+# Helper to access sensor data from another thread
+def get_current_sensor_data():
+    data = latest_data_from_mqtt.copy()
+    if data['timestamp'] != 0:
+        current_time = int(round(time.time() * 1000))
+        data['seconds_ago'] = (current_time - data['timestamp']) / 1000.0
+    else:
+        data['seconds_ago'] = None
+    return data
+
+# Start Zalo Bot (POLLING MODE)
+# WARNING: With multiple gunicorn workers, this will start multiple bot threads.
+# For production, utilize a separate worker process or single gunicorn worker.
+start_zalo_bot(app, db, User, get_current_sensor_data)
+
 if __name__ == "__main__":
     with app.app_context():
         db.create_all()
     
-    # Helper to access sensor data from another thread
-    def get_current_sensor_data():
-        data = latest_data_from_mqtt.copy()
-        if data['timestamp'] != 0:
-            current_time = int(round(time.time() * 1000))
-            data['seconds_ago'] = (current_time - data['timestamp']) / 1000.0
-        else:
-            data['seconds_ago'] = None
-        return data
-
-    # Start Zalo Bot
-    start_zalo_bot(app, db, User, get_current_sensor_data)
-
     app.run(debug=True, port=5000, host='0.0.0.0')
